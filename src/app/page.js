@@ -1,113 +1,212 @@
-import Image from 'next/image'
+"use client";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { generate, count } from "random-words";
+import StarIcon1 from "@/components/StarIcon1";
+import StarIcon2 from "@/components/StarIcon2";
 
 export default function Home() {
+  const [character, setCharacter] = useState([]);
+  const [levelWords, setLevelWords] = useState([]);
+  const [completedWords, setCompletedWords] = useState([]);
+  const [currentWordLetters, setCurrentWordLetters] = useState({
+    letters: [],
+    x: "",
+  });
+  const [currentLetterIndex, setCurrentLetterIndex] = useState(1);
+  const [level, setLevel] = useState(1);
+  const [colorFlag, setColorFlag] = useState(false);
+
+  useEffect(() => {
+    generateLevelWords(level);
+  }, [level]);
+
+  useEffect(() => {
+    if (
+      completedWords.length == levelWords.length &&
+      completedWords.length != 0
+    ) {
+      setColorFlag(true);
+      setTimeout(() => {
+        setCompletedWords([]);
+        setLevel((prev) => prev + 1);
+        setCharacter([]);
+      }, 1000);
+      setTimeout(() => {
+        setColorFlag(false);
+      }, 1200);
+    } else {
+    }
+  }, [completedWords, levelWords]);
+
+  const generateLevelWords = (level) => {
+    const levelWordsge = generate({
+      minLength: level,
+      maxLength: level + 2,
+      exactly: 3,
+    });
+    setLevelWords([
+      //`calc(47vw - ${levelWordsge[0].length + 10}vw)`
+      //`calc(47vw + ${levelWordsge[2].length + 10}vw)`
+      { word: levelWordsge[0], x: "20vw" },
+      { word: levelWordsge[1], x: "47vw" },
+      { word: levelWordsge[2], x: "74vw" },
+    ]);
+  };
+
+  useEffect(() => {
+    const typedCharacterHandler = (event) => {
+      const pressedKey = event.key;
+      let keyFound = false;
+      if (currentWordLetters.letters.length != 0) {
+        if (pressedKey === currentWordLetters.letters[currentLetterIndex]) {
+          setCharacter((prev) => [
+            ...prev,
+            {
+              letter: pressedKey,
+              id: Math.random(),
+              x: currentWordLetters.x,
+            },
+          ]);
+          if (currentLetterIndex + 1 == currentWordLetters.letters.length) {
+            setCurrentWordLetters({
+              letters: [],
+              x: "",
+            });
+            setCurrentLetterIndex(1);
+            setCompletedWords((prev) => [
+              ...prev,
+              {
+                word: currentWordLetters.letters.join(""),
+                x: currentWordLetters.x,
+              },
+            ]);
+          } else {
+            setCurrentLetterIndex((prev) => prev + 1);
+          }
+        } else {
+          setCharacter((prev) => [
+            ...prev,
+            {
+              letter: pressedKey,
+              id: Math.random(),
+              x: `${Math.floor(Math.random() * 141) - 20}vw`,
+              y: "-15vh",
+            },
+          ]);
+        }
+      } else {
+        for (const letterObj of levelWords) {
+          if (
+            letterObj.word.startsWith(pressedKey) &&
+            !completedWords.some(
+              (completedWord) => completedWord.word === letterObj.word
+            )
+          ) {
+            setCharacter((prev) => [
+              ...prev,
+              {
+                letter: pressedKey,
+                id: Math.random(),
+                x: letterObj.x,
+              },
+            ]);
+            keyFound = true;
+            setCurrentWordLetters({
+              letters: letterObj.word.split(""),
+              x: letterObj.x,
+            });
+            break;
+          }
+        }
+
+        if (!keyFound) {
+          setCharacter((prev) => [
+            ...prev,
+            {
+              letter: pressedKey,
+              id: Math.random(),
+              x: `${Math.floor(Math.random() * 141) - 20}vw`,
+              y: "-15vh",
+            },
+          ]);
+        }
+      }
+    };
+    document.addEventListener("keydown", typedCharacterHandler);
+
+    return () => {
+      document.removeEventListener("keydown", typedCharacterHandler);
+    };
+  }, [levelWords, currentWordLetters, currentLetterIndex, level]);
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.js</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="fixed w-full min-h-screen bg-[#0a0923]">
+      <StarIcon2 className="fixed fill-white w-32 h-32 z-10 left-24 top-24 mix-blend-soft-light" />
+      <StarIcon2 className="fixed fill-white w-72 h-72 z-10 right-0 top-52 mix-blend-soft-light" />
+      <StarIcon2 className="fixed fill-white w-96 h-96 z-10 left-[300px] -bottom-14 mix-blend-soft-light" />
+      <StarIcon1 className="fixed fill-white w-32 h-32 z-10 left-[700px] bottom-64 mix-blend-soft-light" />
+
+      <div className="relative w-full min-h-screen h-full select-none overflow-hidden">
+        {levelWords.map(
+          (item, index) => (
+            console.log(
+              `to-${
+                Math.floor(
+                  (1 - (currentLetterIndex - 1) / item.word.split("").length) *
+                    100
+                ) + "%"
+              }`
+            ),
+            (
+              <motion.div
+                key={index}
+                className={`bg-[#ffff] text-[#000] absolute transform -translate-x-1/2 w-fit px-4 py-2 border-2 z-30 border-[#4A5568] text-xl rounded-sm shadow-md`}
+                initial={{
+                  y: "15vh",
+                  x: item.x,
+                  color: "#000",
+                  backgroundColor: "#ffff",
+                }}
+                animate={{
+                  backgroundColor: completedWords.some(
+                    (completedWord) => completedWord.word === item.word
+                  )
+                    ? "#C6F6D5"
+                    : "#ffff",
+                  color: completedWords.some(
+                    (completedWord) => completedWord.word === item.word
+                  )
+                    ? "#4A9C57"
+                    : "#000",
+                  borderColor: completedWords.some(
+                    (completedWord) => completedWord.word === item.word
+                  )
+                    ? "#4A9C57"
+                    : "#4A5568",
+                }}
+                transition={{
+                  duration: 0.1,
+                  delay: colorFlag ? 0.1 : 0.8,
+                }}
+              >
+                {item.word.toUpperCase()}
+              </motion.div>
+            )
+          )
+        )}
+        {character.map((item) => (
+          <motion.div
+            key={item.id}
+            className="absolute transform -translate-x-1/2 z-20 text-white font-medium text-lg"
+            initial={{ x: "49vw", y: "95vh" }}
+            animate={{ y: item.y || "15vh", x: `calc(${item.x} + 10px)` }}
+            transition={{ duration: 1, type: "tween" }}
           >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
+            {item.letter.toUpperCase()}
+          </motion.div>
+        ))}
       </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800 hover:dark:bg-opacity-30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore the Next.js 13 playground.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+    </div>
+  );
 }
