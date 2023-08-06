@@ -161,28 +161,28 @@ export default function Home() {
             (
               <motion.div
                 key={index}
-                className={`bg-[#ffff] text-[#000] absolute transform -translate-x-1/2 w-fit px-4 py-2 border-2 z-30 border-[#4A5568] text-xl rounded-sm shadow-md`}
+                className={`absolute transform -translate-x-1/2 w-fit px-4 py-2 border-2 z-30 border-[#4A5568] text-xl rounded-sm shadow-md`}
                 initial={{
                   y: "15vh",
                   x: item.x,
                   color: "#000",
-                  backgroundColor: "#ffff",
+                 backgroundColor: "#ffff",
                 }}
                 animate={{
                   backgroundColor: completedWords.some(
                     (completedWord) => completedWord.word === item.word
                   )
-                    ? "#C6F6D5"
+                    ? "#2ddf95"
                     : "#ffff",
                   color: completedWords.some(
                     (completedWord) => completedWord.word === item.word
                   )
-                    ? "#4A9C57"
+                    ? "#2f823d"
                     : "#000",
                   borderColor: completedWords.some(
                     (completedWord) => completedWord.word === item.word
                   )
-                    ? "#4A9C57"
+                    ? "#2f823d"
                     : "#4A5568",
                 }}
                 transition={{
